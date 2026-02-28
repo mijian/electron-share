@@ -236,7 +236,7 @@ contextBridge.exposeInMainWorld('myAPI', {
 
 Windows 10/11 通常由系统统一管理，用户在系统设置中开启即可。但 macOS 强制要求在 `Info.plist` 中声明权限用途，否则应用会直接崩溃。
 
-**修改 `package.json`**:
+**1. 修改 `package.json`**:
 在 `build.mac.extendInfo` 中添加以下键值：
 
 ```json
@@ -249,6 +249,37 @@ Windows 10/11 通常由系统统一管理，用户在系统设置中开启即可
     }
   }
 }
+```
+
+**2. 配置 Info.plist (macOS 专属)**
+在 macOS 开发中，`Info.plist` 是核心配置文件，用于声明应用权限、版本、名称等。在 Electron 项目中，我们通常不需要手动创建这个文件，而是通过 `package.json` 中的 `build.mac.extendInfo` 字段来动态生成。
+
+**关键配置项 (ExtendInfo)**:
+| Key (键) | Description (说明) | 示例值 |
+| :--- | :--- | :--- |
+| **NSCameraUsageDescription** | 摄像头权限描述 | "需要访问摄像头以进行视频会议" |
+| **NSMicrophoneUsageDescription** | 麦克风权限描述 | "需要访问麦克风以录制音频" |
+| **NSLocationWhenInUseUsageDescription** | 地理位置权限描述 | "需要访问位置以提供地图服务" |
+| **NSAppTransportSecurity** | 网络安全策略 (允许 HTTP) | `{ "NSAllowsArbitraryLoads": true }` |
+| **LSUIElement** | 纯后台应用 (无 Dock 图标) | `true` 或 `false` |
+
+**3. 配置 Entitlements (授权文件)**
+除了 `Info.plist`，macOS 还需要 `entitlements.mac.plist` 来声明应用需要的系统能力（如 JIT、摄像头硬件访问等）。这通常用于代码签名和 Hardened Runtime。
+
+*示例文件: `build/entitlements.mac.plist`*
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+    <key>com.apple.security.device.camera</key>
+    <true/>
+    <key>com.apple.security.device.audio-input</key>
+    <true/>
+  </dict>
+</plist>
 ```
 
 #### 第二步：主进程拦截与处理 (`electron/permission-manager.ts`)
@@ -587,5 +618,6 @@ npm run dev
 npm run build
 ```
 构建产物将位于 `release` 目录。
-GitHub 仓库地址：https://github.com/mijian/electron-share
 
+## 9. 项目链接
+[GitHub](https://github.com/mijian/electron-share)
