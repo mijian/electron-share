@@ -586,4 +586,6 @@ npm run dev
 ```bash
 npm run build
 ```
-构建产物将位于 `dist` 目录。
+构建产物将位于 `release` 目录。
+GitHub 仓库地址：https://github.com/mijian/electron-share
+
